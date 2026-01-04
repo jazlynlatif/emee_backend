@@ -6,8 +6,23 @@ dotenv.config();
 console.log('server is here');
 
 export const pool = mysql.createPool({
-  host : process.env.MYSQL_HOST,
-  user : process.env.MYSQL_USER,
-  password : process.env.MYSQL_PASSWORD,
-  database : process.env.MYSQL_DATABASE
+  uri: process.env.DATABASE_URL,
+  
+  // Aiven requires SSL. This tells mysql2 to use the certificate
+  ssl: {
+    rejectUnauthorized: true,
+    ca: process.env.DB_CA_CERT,
+  },
+  
+  // Best practice for pools
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 }).promise()
+
+// export const pool = mysql.createPool({
+//   host : process.env.DB_HOST,
+//   user : process.env.DB_USER,
+//   password : process.env.DB_PASSWORD,
+//   database : process.env.DB_DATABASE
+// }).promise()
