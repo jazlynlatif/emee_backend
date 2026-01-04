@@ -17,13 +17,13 @@ app.use(userAuthRoutes);
 app.use(userChatRoutes);
 app.use(userDataRoutes);
 
-app.listen(5001, () => {
-  console.log("Server running on 5001");
-});
-
-// const PORT = process.env.PORT || 5001;
-
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
+// app.listen(5001, () => {
+//   console.log("Server running on 5001");
 // });
+
+const PORT = process.env.PORT || 5001;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
