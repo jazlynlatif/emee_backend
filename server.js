@@ -5,6 +5,13 @@ import adminRoutes from "./routes/admin/admin.js";
 import userAuthRoutes from "./routes/user/user-auth.js";
 import userChatRoutes from "./routes/user/user-chat.js";
 import userDataRoutes from "./routes/user/user-data.js";
+import cors from "cors";
+
+app.use(cors({
+  origin: "*", // OK for now
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 const app = express();
 
