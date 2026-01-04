@@ -7,13 +7,13 @@ import userChatRoutes from "./routes/user/user-chat.js";
 import userDataRoutes from "./routes/user/user-data.js";
 import cors from "cors";
 
+const app = express();
+
 app.use(cors({
   origin: "*", // OK for now
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
-
-const app = express();
 
 app.use(express.json());
 
