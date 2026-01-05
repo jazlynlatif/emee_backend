@@ -14,6 +14,16 @@ console.log(
   process.env.DB_CA_CERT?.includes('BEGIN CERTIFICATE')
 );
 
+const rawCert = process.env.DB_CA_CERT || '';
+// This regex helps catch if the string is just one long line or has real breaks
+const hasRealNewlines = rawCert.includes('\n');
+const hasEscapedNewlines = rawCert.includes('\\n');
+
+console.log('Cert has real newlines:', hasRealNewlines);
+console.log('Cert has escaped \\n:', hasEscapedNewlines);
+
+const finalCert = rawCert.replace(/\\n/g, '\n').trim();
+
 
 export const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -24,8 +34,10 @@ export const pool = mysql.createPool({
   
   // Aiven requires SSL. This tells mysql2 to use the certificate
   ssl: {
+    ca: finalCert,
     rejectUnauthorized: true,
-    ca: process.env.DB_CA_CERT.replace(/\\n/g, '\n'),
+    // ADD THIS LINE - It is often the "missing link" for Aiven
+    servername: process.env.DB_HOST
   },
   
   // Best practice for pools
