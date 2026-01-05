@@ -1,3 +1,6 @@
+import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
+
 import mysql from 'mysql2';
 import dotenv from 'dotenv';
 
