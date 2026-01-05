@@ -5,6 +5,13 @@ dotenv.config();
 
 console.log('server is here');
 
+console.log('DB_CA_CERT exists:', !!process.env.DB_CA_CERT);
+console.log(
+  'DB_CA_CERT valid:',
+  process.env.DB_CA_CERT?.includes('BEGIN CERTIFICATE')
+);
+
+
 export const pool = mysql.createPool({
   uri: process.env.DATABASE_URL,
   
