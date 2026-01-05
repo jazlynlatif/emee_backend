@@ -6,24 +6,33 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-console.log('server is here');
+const formatCert = (rawCert) => {
+  if (!rawCert) return '';
+  
+  // Remove any existing quotes, spaces, or weird formatting
+  const cleanCert = rawCert.replace(/["']/g, '').trim();
 
-console.log('DB_CA_CERT exists:', !!process.env.DB_CA_CERT);
-console.log(
-  'DB_CA_CERT valid:',
-  process.env.DB_CA_CERT?.includes('BEGIN CERTIFICATE')
-);
+  // If it already has newlines, just return it
+  if (cleanCert.includes('\n')) return cleanCert;
 
-const rawCert = process.env.DB_CA_CERT || '';
-// This regex helps catch if the string is just one long line or has real breaks
-const hasRealNewlines = rawCert.includes('\n');
-const hasEscapedNewlines = rawCert.includes('\\n');
+  // Otherwise, take the "core" of the cert and wrap it with newlines every 64 chars
+  // This is the standard PEM format requirement
+  const header = "-----BEGIN CERTIFICATE-----";
+  const footer = "-----END CERTIFICATE-----";
+  
+  let body = cleanCert
+    .replace(header, '')
+    .replace(footer, '')
+    .replace(/\s/g, ''); // Remove all spaces
 
-console.log('Cert has real newlines:', hasRealNewlines);
-console.log('Cert has escaped \\n:', hasEscapedNewlines);
+  // Rebuild the body with a newline every 64 characters
+  const regex = /.{1,64}/g;
+  const lines = body.match(regex) || [];
+  
+  return `${header}\n${lines.join('\n')}\n${footer}`;
+};
 
-const finalCert = rawCert.replace(/\\n/g, '\n').trim();
-
+const finalCert = formatCert(process.env.DB_CA_CERT);
 
 export const pool = mysql.createPool({
   host: process.env.DB_HOST,
