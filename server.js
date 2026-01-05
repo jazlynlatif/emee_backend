@@ -6,6 +6,7 @@ import userAuthRoutes from "./routes/user/user-auth.js";
 import userChatRoutes from "./routes/user/user-chat.js";
 import userDataRoutes from "./routes/user/user-data.js";
 import cors from "cors";
+import { pool } from './database.js';
 
 const app = express();
 
