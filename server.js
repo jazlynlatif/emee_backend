@@ -15,6 +15,20 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
+app.get('/health/db', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT VERSION()');
+    res.json({ ok: true, version: rows[0] });
+  } catch (err) {
+    console.error('DB ERROR:', err);
+    res.status(500).json({
+      message: err.message,
+      code: err.code,
+    });
+  }
+});
+
+
 app.use(express.json());
 
 app.use(adminAuthRoutes);
