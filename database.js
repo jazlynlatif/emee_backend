@@ -11,7 +11,7 @@ export const pool = mysql.createPool({
   // Aiven requires SSL. This tells mysql2 to use the certificate
   ssl: {
     rejectUnauthorized: true,
-    ca: process.env.DB_CA_CERT,
+    ca: process.env.DB_CA_CERT.replace(/\\n/g, '\n'),
   },
   
   // Best practice for pools
