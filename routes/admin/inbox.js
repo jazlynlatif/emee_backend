@@ -190,7 +190,7 @@ router.get('/admin/assesment/get/:reportid', verifyAccessToken, async (req,res) 
 
   try {
     const [result] = await pool.query(
-      'SELECT DISTINCT assq.question_text AS question, COALESCE(assa.answer_text, 'Tidak terjawab') AS answer FROM user_answers ans JOIN assesment_questions assq ON assq.id = ans.question_id LEFT JOIN assesment_answers assa ON assa.id = ans.answer_id JOIN reports ON reports.report_id = ans.report_id JOIN users ON users.user_id = reports.user_id WHERE ans.report_id = ?;', 
+      `SELECT DISTINCT assq.question_text AS question, COALESCE(assa.answer_text, 'Tidak terjawab') AS answer FROM user_answers ans JOIN assesment_questions assq ON assq.id = ans.question_id LEFT JOIN assesment_answers assa ON assa.id = ans.answer_id JOIN reports ON reports.report_id = ans.report_id JOIN users ON users.user_id = reports.user_id WHERE ans.report_id = ?;`, 
       [reportid]
     );
 
