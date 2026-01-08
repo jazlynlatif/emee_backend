@@ -75,7 +75,7 @@ router.post('/register', async (req, res) => {
   };
 });
 
-router.post('/register/complete', verifyAccessToken, async (req, res) => {
+router.post('/register/complete', async (req, res) => {
   const { first_name, last_name, gender, birth_date, phone_number } = req.body;
 
   try {
