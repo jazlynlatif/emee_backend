@@ -35,81 +35,39 @@ router.post('/register', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    console.log('you reached here! : about to pool')
     const [rows] = await pool.query(
-      'SELECT * FROM users WHERE email = ?;', [email]
+      'SELECT * FROM users WHERE email = ?',
+      [email]
     );
 
-    console.log('you reached here! : after pool ')
-
-    if (rows.length > 0 ) {
-      console.log('Already exists');
+    if (rows.length > 0) {
       return res.status(400).send('Email already registered');
-    };
-
-    console.log('you reached here! : after exist check')
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    console.log('you reached here! : after hash')
-    
-    const [result] = await pool.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword]);
-
-    console.log('you reached here!')
-
-    const token = jwt.sign(
-      {"id" : result.insertId},
-      process.env.JWT_SECRET,
-      {expiresIn : "1h"}
-    )
-
-    console.log('you reached here! : after jwt.sign')
-
-    return res.status(201).json({
-      message : 'Account registered succesfully', 
-      token : token
-    })
-
-  } catch(err) {
-    return res.status(500).send(err.toString());
-  };
-});
-
-router.post('/register/complete', async (req, res) => {
-  const { first_name, last_name, gender, birth_date, phone_number } = req.body;
-
-  try {
-    const [rows] = await pool.query(
-      'SELECT * FROM users_info WHERE user_id = ?', [req.auth.id]
+    const [result] = await pool.query(
+      'INSERT INTO users (email, password) VALUES (?, ?)',
+      [email, hashedPassword]
     );
 
-    if(rows.length > 0) {
-      return res.status(400).send('Information has been registered');
-    }
-
-    const date = new Date(birth_date);
-
-    await pool.query(
-      'INSERT INTO users_info (user_id, first_name, last_name, gender, birth_date, phone_number) VALUES (?, ?, ?, ?, ?, ?)', 
-      [req.auth.id, first_name, last_name, gender, date, phone_number] 
-    )
-
+    // ✅ CREATE SESSION + TOKENS (same as login)
     const refreshToken = generateRefreshToken();
 
     const [sessionResult] = await pool.query(
       `INSERT INTO sessions
        (subject_id, subject_type, refresh_token_hash, expires_at)
        VALUES (?, 'user', ?, DATE_ADD(NOW(), INTERVAL 30 DAY))`,
-      [user.user_id, hashToken(refreshToken)]
+      [result.insertId, hashToken(refreshToken)]
     );
 
     const accessToken = generateAccessToken(
-      { id: user.user_id, type: 'user' },
+      { id: result.insertId, type: 'user' },
       sessionResult.insertId
     );
 
-    return res.status(200).json({
-      message: 'SignUp successful',
+    return res.status(201).json({
+      message: 'Account registered successfully',
       accessToken,
       refreshToken
     });
@@ -117,8 +75,42 @@ router.post('/register/complete', async (req, res) => {
   } catch (err) {
     return res.status(500).send(err.toString());
   }
+});
 
-})
+
+router.post('/register/complete', verifyAccessToken, async (req, res) => {
+  const { first_name, last_name, gender, birth_date, phone_number } = req.body;
+
+  try {
+    const userId = req.auth.id;
+
+    const [rows] = await pool.query(
+      'SELECT * FROM users_info WHERE user_id = ?',
+      [userId]
+    );
+
+    if (rows.length > 0) {
+      return res.status(400).send('Information has been registered');
+    }
+
+    const date = new Date(birth_date);
+
+    await pool.query(
+      `INSERT INTO users_info 
+       (user_id, first_name, last_name, gender, birth_date, phone_number)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [userId, first_name, last_name, gender, date, phone_number]
+    );
+
+    return res.status(200).json({
+      message: 'Signup completed successfully'
+    });
+
+  } catch (err) {
+    return res.status(500).send(err.toString());
+  }
+});
+
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
