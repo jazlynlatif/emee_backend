@@ -94,7 +94,25 @@ router.post('/register/complete', verifyAccessToken, async (req, res) => {
       [req.auth.id, first_name, last_name, gender, date, phone_number] 
     )
 
-    return res.status(201).send('Information registered succesfully');
+    const refreshToken = generateRefreshToken();
+
+    const [sessionResult] = await pool.query(
+      `INSERT INTO sessions
+       (subject_id, subject_type, refresh_token_hash, expires_at)
+       VALUES (?, 'user', ?, DATE_ADD(NOW(), INTERVAL 30 DAY))`,
+      [user.user_id, hashToken(refreshToken)]
+    );
+
+    const accessToken = generateAccessToken(
+      { id: user.user_id, type: 'user' },
+      sessionResult.insertId
+    );
+
+    return res.status(200).json({
+      message: 'SignUp successful',
+      accessToken,
+      refreshToken
+    });
 
   } catch (err) {
     return res.status(500).send(err.toString());
